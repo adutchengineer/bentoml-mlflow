@@ -2,25 +2,35 @@ from utils import fetch_logged_data
 import bentoml
 import mlflow
 from pprint import pprint
-import numpy as np
 import pandas as pd
-from scipy.stats import loguniform
+from typing import List
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RepeatedStratifiedKFold
-from warnings import simplefilter
-# ignore all future warnings
-simplefilter(action='ignore', category=FutureWarning)
+from sklearn.model_selection import train_test_split
 
-
-def main():
-    mlflow.sklearn.autolog()
-    df = pd.read_csv('data/kc_house_data.csv')
+def get_data(csv:str) -> None:
+    '''
+    Separate and write the features to csv file
+    '''
+    df = pd.read_csv(csv)
     df = df.drop(['id', 'date'], axis=1)
     # split into input and output elements
     X = df.loc[:, df.columns != 'price'].values
     y = df.loc[:, 'price'].values
-    # define model
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,random_state=42)
+    pd.DataFrame(X_test).to_csv('data/test/X_test.csv',index=False)
+    pd.DataFrame(y_test).to_csv('data/test/y_test.csv',index=False)
+    pd.DataFrame(X_train).to_csv('data/train/X_train.csv',index=False)
+    pd.DataFrame(y_train).to_csv('data/train/y_train.csv',index=False) 
+
+
+
+
+def main():
+    mlflow.sklearn.autolog()
+    X_train = pd.read_csv('data/train/X_train.csv')
+    y_train = pd.read_csv('data/train/y_train.csv')
     model = RandomForestRegressor(random_state=42)
     # define evaluation
     cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
@@ -35,7 +45,7 @@ def main():
     search = GridSearchCV(
         estimator=model, param_grid=param_grid, n_jobs=-1, cv=cv)
     # execute search
-    result = search.fit(X, y)
+    result = search.fit(X_train, y_train)
     # summarize result
     print('Best Score: %s' % result.best_score_)
     print('Best Hyperparameters: %s' % result.best_params_)
