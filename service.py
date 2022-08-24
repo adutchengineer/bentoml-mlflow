@@ -20,7 +20,7 @@ class PreProcessor(bentoml.Runnable):
 
     @bentoml.Runnable.method(batchable=True)
     def remove_na(self, df: pd.DataFrame):
-        return df.dropna().values
+        return df.dropna()
 
 preprocessor_runner = bentoml.Runner(PreProcessor)
 runner = bentoml.mlflow.get('sklearn_house_data').to_runner()
