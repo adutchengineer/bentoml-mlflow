@@ -1,14 +1,11 @@
 from __future__ import annotations
 
 import json
-import os
-
-import bentoml
 import numpy as np
+import bentoml
 import pandas as pd
 import pydantic
-from bentoml.io import JSON
-from pathlib import Path
+from bentoml.io import JSON, PandasSeries, PandasDataFrame
 
 
 class PreProcessor(bentoml.Runnable):
@@ -26,7 +23,6 @@ preprocessor_runner = bentoml.Runner(PreProcessor)
 runner = bentoml.mlflow.get('sklearn_house_data').to_runner()
 svc = bentoml.Service('sklearn_house_data', runners=[preprocessor_runner, runner])
 
-
 class File(pydantic.BaseModel):
     path:str
 
@@ -39,9 +35,44 @@ file_input = JSON(
     output=JSON(),
     route='v1/file/'
 )
-def predict(file_input: File) -> json:
+def predictions(file_input: File) -> json:
     file_input = file_input.path
     houses = pd.read_csv(file_input)
     df = preprocessor_runner.remove_na.run(houses)
-    ratings = runner.run(df).flatten()
-    return {'ratings':ratings}
+    prices = runner.run(df).flatten()
+    return {'prices':prices}
+
+
+class House(pydantic.BaseModel):
+     bedrooms: int
+     bathrooms: int
+     sqft_living: int
+     sqft_lot: int
+     floors: int
+     waterfront: int
+     view: int
+     condition: int
+     grade: int
+     sqft_above: int
+     sqft_basement: int
+     yr_built: int
+     yr_renovated: int
+     zipcode: int
+     lat: float
+     long: float
+     sqft_living: int
+     sqft_lot15: int
+
+input_spec = JSON(pydantic_model=House)
+
+arr = [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
+input_spec = PandasDataFrame.from_sample(pd.DataFrame(np.array(arr)))
+
+@svc.api(
+    input=input_spec,
+    output=JSON(),
+    route='v1/predict/'
+)
+def predict(house) -> json:
+    prices = runner.run(house)
+    return {'prices':prices}

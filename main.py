@@ -15,6 +15,7 @@ def get_data(csv:str) -> None:
     '''
     df = pd.read_csv(csv)
     df = df.drop(['id', 'date'], axis=1)
+    df = df.dropna()
     # split into input and output elements
     X = df.loc[:, df.columns != 'price'].values
     y = df.loc[:, 'price'].values
