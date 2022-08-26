@@ -42,29 +42,6 @@ def predictions(file_input: File) -> json:
     prices = runner.run(df).flatten()
     return {'prices':prices}
 
-
-class House(pydantic.BaseModel):
-     bedrooms: int
-     bathrooms: int
-     sqft_living: int
-     sqft_lot: int
-     floors: int
-     waterfront: int
-     view: int
-     condition: int
-     grade: int
-     sqft_above: int
-     sqft_basement: int
-     yr_built: int
-     yr_renovated: int
-     zipcode: int
-     lat: float
-     long: float
-     sqft_living: int
-     sqft_lot15: int
-
-input_spec = JSON(pydantic_model=House)
-
 arr = [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
 input_spec = PandasDataFrame.from_sample(pd.DataFrame(np.array(arr)))
 
