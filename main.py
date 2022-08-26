@@ -1,37 +1,26 @@
-from utils import fetch_logged_data
+from helper.utils import fetch_logged_data
 import bentoml
 import mlflow
+import os
 from pprint import pprint
 import pandas as pd
 from typing import List
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RepeatedStratifiedKFold
-from sklearn.model_selection import train_test_split
-
-def get_data(csv:str) -> None:
-    '''
-    Separate and write the features to csv file
-    '''
-    df = pd.read_csv(csv)
-    df = df.drop(['id', 'date'], axis=1)
-    df = df.dropna()
-    # split into input and output elements
-    X = df.loc[:, df.columns != 'price'].values
-    y = df.loc[:, 'price'].values
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33,random_state=42)
-    pd.DataFrame(X_test).to_csv('data/test/X_test.csv',index=False)
-    pd.DataFrame(y_test).to_csv('data/test/y_test.csv',index=False)
-    pd.DataFrame(X_train).to_csv('data/train/X_train.csv',index=False)
-    pd.DataFrame(y_train).to_csv('data/train/y_train.csv',index=False) 
-
-
 
 
 def main():
     mlflow.sklearn.autolog()
-    X_train = pd.read_csv('data/train/X_train.csv')
-    y_train = pd.read_csv('data/train/y_train.csv')
+    try:
+        X_train = pd.read_csv('data/train/X_train.csv')
+        print(X_train.columns)
+        y_train = pd.read_csv('data/train/y_train.csv').values.ravel()
+    except IOError:
+        print('''Make sure that you have: 
+                1. Downloaded the data from Kaggle into the data folder.
+                2. Ran the download_data.py file''')
+        return
     model = RandomForestRegressor(random_state=42)
     # define evaluation
     cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)

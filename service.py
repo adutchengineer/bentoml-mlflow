@@ -43,7 +43,7 @@ def predictions(file_input: File) -> json:
     return {'prices':prices}
 
 arr = [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
-input_spec = PandasDataFrame.from_sample(pd.DataFrame(np.array(arr)))
+input_spec = PandasDataFrame.from_sample(pd.DataFrame(np.array(arr).astype('float')))
 
 @svc.api(
     input=input_spec,
