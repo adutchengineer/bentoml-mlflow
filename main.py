@@ -14,7 +14,6 @@ def main():
     mlflow.sklearn.autolog()
     try:
         X_train = pd.read_csv('data/train/X_train.csv')
-        print(X_train.columns)
         y_train = pd.read_csv('data/train/y_train.csv').values.ravel()
     except IOError:
         print('''Make sure that you have: 
