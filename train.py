@@ -2,6 +2,7 @@ from helper.utils import fetch_logged_data
 import bentoml
 import mlflow
 import os
+import numpy as np
 from pprint import pprint
 import pandas as pd
 from typing import List
@@ -13,7 +14,28 @@ from sklearn.model_selection import RepeatedStratifiedKFold
 def main():
     mlflow.sklearn.autolog()
     try:
-        X_train = pd.read_csv('data/train/X_train.csv')
+        input_dtypes = {
+        'bedrooms': np.dtype('float64'),
+        'bathrooms': np.dtype('float64'),
+        'sqft_living': np.dtype('float64'),
+        'sqft_lot': np.dtype('float64'),
+        'floors': np.dtype('float64'),
+        'waterfront': np.dtype('float64'),
+        'view': np.dtype('float64'),
+        'condition': np.dtype('float64'),
+        'grade': np.dtype('float64'),
+        'sqft_above': np.dtype('float64'),
+        'sqft_basement': np.dtype('float64'),
+        'yr_built': np.dtype('float64'),
+        'yr_renovated': np.dtype('float64'),
+        'zipcode': np.dtype('float64'),
+        'lat': np.dtype('float64'),
+        'long': np.dtype('float64'),
+        'sqft_living15': np.dtype('float64'),
+        'sqft_lot15': np.dtype('float64')
+    }
+        
+        X_train = pd.read_csv('data/train/X_train.csv', dtype=input_dtypes)
         y_train = pd.read_csv('data/train/y_train.csv').values.ravel()
     except IOError:
         print('''Make sure that you have: 

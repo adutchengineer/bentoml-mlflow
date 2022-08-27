@@ -19,16 +19,21 @@ class PreProcessor(bentoml.Runnable):
     def remove_na(self, df: pd.DataFrame):
         return df.dropna()
 
+
 preprocessor_runner = bentoml.Runner(PreProcessor)
 runner = bentoml.mlflow.get('sklearn_house_data').to_runner()
-svc = bentoml.Service('sklearn_house_data', runners=[preprocessor_runner, runner])
+svc = bentoml.Service('sklearn_house_data', runners=[
+                      preprocessor_runner, runner])
+
 
 class File(pydantic.BaseModel):
-    path:str
+    path: str
+
 
 file_input = JSON(
     pydantic_model=File,
     validate_json=True)
+
 
 @svc.api(
     input=file_input,
@@ -40,16 +45,16 @@ def predictions(file_input: File) -> json:
     houses = pd.read_csv(file_input)
     df = preprocessor_runner.remove_na.run(houses)
     prices = runner.run(df).flatten()
-    return {'prices':prices}
+    return {'prices': prices}
 
-arr = [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
-input_spec = PandasDataFrame.from_sample(pd.DataFrame(np.array(arr).astype('float')))
 
 @svc.api(
-    input=input_spec,
+    input=PandasDataFrame(),
     output=JSON(),
     route='v1/predict/'
 )
-def predict(house) -> json:
-    prices = runner.run(house)
-    return {'prices':prices}
+def predict(house_df: pd.DataFrame) -> json:
+    house_df.columns = ['bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'floors', 'waterfront', 'view', 'condition', 'grade',
+                        'sqft_above', 'sqft_basement', 'yr_built', 'yr_renovated', 'zipcode', 'lat', 'long', 'sqft_living15', 'sqft_lot15']
+    prices = runner.run(house_df.astype(float))
+    return {'price': prices}
